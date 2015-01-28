@@ -25,7 +25,7 @@
  */
 
 #include <VirtualWire.h>
-#include <NewPing.h>
+//#include <NewPing.h>
 
 #define TRIGGER_PIN  12  // Arduino pin tied to trigger pin on the ultrasonic sensor.
 #define ECHO_PIN     11  // Arduino pin tied to echo pin on the ultrasonic sensor.
@@ -36,16 +36,18 @@ const int buttonPin = 2;
 const int ledPin    = 12;
 const int echoPin   = 7;     // Echo pin of distance sensor
 const int trigPin   = 8;     // Trigger pin
+const int echo2Pin  = 9;     // Echo pin of distance sensor
+const int trig2Pin  = 10;     // Trigger pin
 
 // Variables
 int buttonState = 0;         // variable for reading the pushbutton status
 int maximumRange = 200; // Maximum range needed
 int minimumRange = 0; // Minimum range needed
-unsigned long duration, distance; // Duration used to calculate distance
+unsigned long duration, duration2; // Duration used to calculate distance
 
 char controller[8];
 
-NewPing sonar(TRIGGER_PIN, ECHO_PIN, MAX_DISTANCE); // NewPing setup of pins and maximum distance.
+//NewPing sonar(TRIGGER_PIN, ECHO_PIN, MAX_DISTANCE); // NewPing setup of pins and maximum distance.
 
 void setup()
 {
@@ -55,6 +57,8 @@ void setup()
   pinMode(13,OUTPUT);
   pinMode(trigPin, OUTPUT);
   pinMode(echoPin, INPUT);
+  pinMode(trig2Pin, OUTPUT);
+  pinMode(echo2Pin, INPUT);
   
   // initialize the LED pin as an output:
   pinMode(ledPin, OUTPUT);      
@@ -72,12 +76,12 @@ void loop()
   char b[16];
   String str;
   
-  unsigned int uS = sonar.ping(); // Send ping, get ping time in microseconds (uS).
+  //unsigned int uS = sonar.ping(); // Send ping, get ping time in microseconds (uS).
 
   // read the state of the pushbutton value:
   buttonState = digitalRead(buttonPin);
 
-  // Read the distance sensor
+  // Read the first distance sensor
   digitalWrite(trigPin, LOW); 
   delayMicroseconds(2); 
 
@@ -88,9 +92,26 @@ void loop()
   duration = pulseIn(echoPin, HIGH);
  
   //Calculate the distance (in cm) based on the speed of sound.
-  distance = duration/58.2;
-  Serial.print("Distance: ");
+  long distance = duration/58.2;
+  
+  // Read the second distance sensor
+  digitalWrite(trig2Pin, LOW); 
+  delayMicroseconds(2); 
+
+  digitalWrite(trig2Pin, HIGH);
+  delayMicroseconds(10); 
+ 
+  digitalWrite(trig2Pin, LOW);
+  duration2 = pulseIn(echo2Pin, HIGH);
+ 
+  //Calculate the distance (in cm) based on the speed of sound.
+  long distance2 = ((duration2 / 2.9) / 2);
+  
+  Serial.print("Distance 1: ");
   Serial.print(distance);
+  Serial.print("cm");
+  Serial.print("\tDistance 2: ");
+  Serial.print(distance2);
   Serial.println("cm");
   
   if ( buttonState == HIGH ) {
