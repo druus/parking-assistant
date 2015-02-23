@@ -25,10 +25,12 @@
  */
 
 #include <VirtualWire.h>
-//#include <NewPing.h>
+#include <NewPing.h>
 
-#define TRIGGER_PIN  12  // Arduino pin tied to trigger pin on the ultrasonic sensor.
-#define ECHO_PIN     11  // Arduino pin tied to echo pin on the ultrasonic sensor.
+#define TRIGGER_PIN_1  12  // Arduino pin tied to trigger pin on the ultrasonic sensor.
+#define ECHO_PIN_1     11  // Arduino pin tied to echo pin on the ultrasonic sensor.
+#define TRIGGER_PIN_2  8  // Arduino pin tied to trigger pin on the ultrasonic sensor.
+#define ECHO_PIN_2     7  // Arduino pin tied to echo pin on the ultrasonic sensor.
 #define MAX_DISTANCE 200 // Maximum distance we want to ping for (in centimeters). Maximum sensor distance is rated at 400-500cm.
 
 // Define constants
@@ -47,7 +49,8 @@ unsigned long duration, duration2; // Duration used to calculate distance
 
 char controller[8];
 
-//NewPing sonar(TRIGGER_PIN, ECHO_PIN, MAX_DISTANCE); // NewPing setup of pins and maximum distance.
+NewPing sonar1(TRIGGER_PIN_1, ECHO_PIN_1, MAX_DISTANCE);
+NewPing sonar2(TRIGGER_PIN_2, ECHO_PIN_2, MAX_DISTANCE);
 
 void setup()
 {
@@ -73,11 +76,10 @@ void setup()
 void loop()
 {
   
-  char b[16];
-  String str;
+  char b1[16], b2[16];
+  String str1, str2;
   
-  //unsigned int uS = sonar.ping(); // Send ping, get ping time in microseconds (uS).
-
+  /*
   // read the state of the pushbutton value:
   buttonState = digitalRead(buttonPin);
 
@@ -106,37 +108,41 @@ void loop()
  
   //Calculate the distance (in cm) based on the speed of sound.
   long distance2 = ((duration2 / 2.9) / 2);
+  */
+  
+  unsigned int distance1 = sonar1.convert_cm(sonar1.ping_median(5)); // Send ping, get ping time in microseconds (uS).
+  delay(100);
+  unsigned int distance2 = sonar2.convert_cm(sonar2.ping_median(5));
   
   Serial.print("Distance 1: ");
-  Serial.print(distance);
+  Serial.print(distance1);
   Serial.print("cm");
   Serial.print("\tDistance 2: ");
   Serial.print(distance2);
   Serial.println("cm");
-  
-  if ( buttonState == HIGH ) {
-    strcpy( controller, "0:2:8" );
-    vw_send((uint8_t *)controller, strlen(controller));
-    vw_wait_tx(); // Wait until the whole message is gone
-  }
-  
-  strcpy( controller, "0:0:4" );
-  vw_send((uint8_t *)controller, strlen(controller));
-  vw_wait_tx(); // Wait until the whole message is gone
-  digitalWrite(13,1);
-  delay(100);
 
-  //strcpy( controller, "0:1:7" );
-  str = "0:1:";
-  str += String(distance); // Convert integer to string
-  str.toCharArray(b,16);
+  memset(b1, 0, sizeof(b1));
+  str1 = "0:1:";
+  str1 += String(distance1); // Convert integer to string
+  str1.toCharArray(b1,16);
   
   Serial.print("Sending frame: ");
-  Serial.println(b);
-  vw_send((uint8_t *)b, strlen(b));
+  Serial.println(b1);
+  vw_send((uint8_t *)b1, strlen(b1));
   vw_wait_tx(); // Wait until the whole message is gone
+  
+  delay(250);
+  memset(b2, 0, sizeof(b2));
+  str2 = "0:2:";
+  str2 += String(distance2); // Convert integer to string
+  str2.toCharArray(b2,16);
   digitalWrite(13,0);
 
-  delay(1000);
+  Serial.print("Sending frame: ");
+  Serial.println(b2);
+  vw_send((uint8_t *)b2, strlen(b2));
+  vw_wait_tx(); // Wait until the whole message is gone
+  
+  delay(250);
 
 }
