@@ -67,10 +67,9 @@ void setup()
     lcd.setCursor(0, 1);
     lcd.write("Version 0.1");
     delay(1500);
-    
-    vw_set_ptt_inverted(true);
-    vw_set_rx_pin(12);
-    vw_setup(4000);  // Bits per sec
+
+    vw_set_rx_pin(RX_PIN);
+    vw_setup(RX_BAUD);  
     pinMode(13, OUTPUT);
     pinMode(WARN_LED, OUTPUT);
 
